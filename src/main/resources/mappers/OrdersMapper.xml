@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yh.mapper.OrdersMapper">
+
+    <!--查询订单，查询订单对应的产品-->
+    <resultMap id="findAllMap" type="Orders" autoMapping="true">
+        <id column="id" property="id" />
+        <association property="product" javaType="Product" autoMapping="true">
+            <id property="id" column="id"/>
+        </association>
+    </resultMap>
+<!--    查询所有-->
+    <select id="findAll" resultMap="findAllMap">
+        SELECT * FROM orders o , product p WHERE o.productId = p.id
+    </select>
+
+
+    <!--查询订单详情-->
+    <resultMap id="findByIdMap" type="Orders" autoMapping="true">
+        <!--映射本身orders-->
+        <id property="id" column="oid"/>
+
+        <!--映射Product-->
+        <association property="product" javaType="Product" autoMapping="true">
+            <id property="id" column="pid"/>
+        </association>
+
+        <!--映射member-->
+        <association property="member" javaType="Member" autoMapping="true">
+            <id property="id" column="mid"/>
+        </association>
+
+        <!--映射traveller-->
+        <collection property="travellers" javaType="List" ofType="Traveller" autoMapping="true">
+            <id property="id" column="tid"/>
+        </collection>
+    </resultMap>
+    <select id="findById" resultMap="findByIdMap">
+        SELECT
+            *,
+            o.id as oid,
+            p.id AS pid,
+            m.id AS mid,
+            t.id AS tid
+        FROM
+            orders o
+                LEFT JOIN product p ON o.productId = p.id
+                LEFT JOIN member m ON o.memberId = m.id
+                LEFT JOIN order_traveller ot ON ot.orderId = o.id
+                LEFT JOIN traveller t ON ot.travellerId = t.id
+        WHERE
+            o.id = #{id}
+    </select>
+
+<!--新增订单-->
+    <insert id="add">
+          <selectKey keyColumn="id" keyProperty="id" resultType="int" order="AFTER">
+               select last_insert_id()
+          </selectKey>
+        insert into orders(
+            orderNum,
+            orderTime,
+            peopleCount,
+            orderDesc,
+            payType,
+            orderStatus,
+            productId,
+            memberId)
+        values(#{orderNum},
+               #{orderTime},
+               #{peopleCount},
+               #{orderDesc},
+               #{payType},
+               #{orderStatus},
+               #{productId},
+               #{memberId})
+    </insert>
+
+
+<!--    添加游客和订单的关联信息-->
+     <insert id="memberAndTraveller">
+         INSERT INTO `myboot`.`order_traveller` (`orderId`, `travellerId`) VALUES (#{orderId}, #{travellerId});
+     </insert>
+
+<!--    根据id查询订单信息-->
+     <select id="editById">
+         select * from orders where id=#{orderId}
+     </select>
+
+<!--    根据id删除订单信息-->
+     <delete id="deleteById">
+         delete from orders where id=#{id}
+     </delete>
+    <!--    根据id删除订单和游客关联信息-->
+    <delete id="deleteOrderAndTraveller">
+        delete from order_traveller where orderId=#{id}
+    </delete>
+
+<!--    根据id修改订单信息-->
+     <update id="update">
+         update orders set
+             orderNum=#{orderNum},
+             orderTime=#{orderTime},
+             peopleCount=#{peopleCount},
+             orderDesc=#{orderDesc},
+             payType=#{payType},
+             orderStatus=#{orderStatus},
+             productId=#{productId},
+             memberId=#{memberId}
+         where id=#{id}
+     </update>
+</mapper>

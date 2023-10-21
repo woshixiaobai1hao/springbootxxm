@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.mapper.RoleMapper">
+<!--查询所有角色-->
+    <select id="findAll" resultType="role">
+        select * from role
+    </select>
+<!-- 添加角色-->
+    <insert id="save" >
+        INSERT INTO role (roleName, roleDesc) VALUES (#{roleName},#{roleDesc});
+    </insert>
+<!--    查询角色详情-->
+    <resultMap id="roleMap" type="role" autoMapping="true">
+        <id property="id" column="rid"/>
+        <collection property="permissions" ofType="permission" javaType="List" autoMapping="true">
+            <id property="id" column="pid"/>
+        </collection>
+    </resultMap>
+    <select id="findById" resultMap="roleMap">
+        select * ,
+               r.id rid,
+               p.id pid
+        from
+            role r
+                left JOIN role_permission rp ON rp.roleId=r.id
+                LEFT JOIN permission p on p.id=rp.permissionId
+        where r.id= #{id}
+    </select>
+<!-- 查询当前角色有哪些权限可以添加   -->
+    <select id="findRoleByIdOtherPermission" resultType="permission">
+       SELECT * from permission where id not in (select permissionId from role_permission where roleId=#{id})
+    </select>
+<!--    给角色添加权限-->
+    <insert id="addPermissionToRole">
+        INSERT INTO role_permission(`permissionId`, `roleId`) VALUES (#{permissionId},#{roleId});
+    </insert>
+<!--   先删除角色关联权限表-->
+    <delete id="deleteRoleAndPermission">
+        DELETE FROM role_permission WHERE  roleId=#{id};
+    </delete>
+<!--  删除角色表和用户表的关系  -->
+    <delete id="deleteRoleAndUser">
+        DELETE FROM users_role WHERE roleId=#{id};
+    </delete>
+<!--    删除角色表  -->
+    <delete id="deleteRole">
+        DELETE FROM role WHERE id=#{id};
+    </delete>
+</mapper>

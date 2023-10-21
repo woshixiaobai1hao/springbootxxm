@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.mapper.PermissionMapper">
+<!-- 查询所有权限  -->
+    <select id="findAll" resultType="Permission">
+        select * from permission
+    </select>
+<!--    添加权限-->
+    <insert id="save">
+        insert into permission(`permissionName`, `url`)values (#{permissionName},#{url})
+    </insert>
+<!--    根据id查找权限详情-->
+    <resultMap id="PermissionMap" type="Permission" autoMapping="true" >
+        <id column="pid" property="id"/>
+        <collection property="roles" javaType="List" autoMapping="true" ofType="role">
+            <id column="rid" property="id"/>
+        </collection>
+    </resultMap>
+    <select id="findById" resultMap="PermissionMap">
+        SELECT *,
+               p.id pid,
+               r.id rid
+        from
+            permission p
+                LEFT JOIN role_permission rp on rp.permissionId=p.id
+                LEFT JOIN role r on r.id=rp.roleId
+        where p.id=#{id}
+    </select>
+<!--    删除角色权限关系表-->
+    <delete id="deletePermissionAndRole">
+        delete from role_permission where permissionId=#{id}
+    </delete>
+<!--    删除权限-->
+    <delete id="deletePermission">
+        delete from permission where id=#{id}
+    </delete>
+</mapper>

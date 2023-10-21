@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yh.mapper.ProductMapper">
+<!--    查询所有商品-->
+    <select id="findAll" resultType="Product">
+        select * from product
+    </select>
+<!--    根据主键查找商品-->
+    <select id="findById" resultType="Product" parameterType="int">
+        select * from product where id = #{id}
+    </select>
+<!--    添加商品-->
+    <insert id="add" >
+        insert into product(productNum,
+                 productName,
+                 cityName,
+                departureTime,
+                productPrice,
+                productDesc,
+               productStatus)
+        values(#{productNum},
+               #{productName},
+               #{cityName},
+               #{departureTime},
+               #{productPrice},
+               #{productDesc},
+               #{productStatus})
+    </insert>
+<!--    修改商品信息-->
+    <update id="edit" >
+    update product set
+    productNum=#{productNum},
+    productName=#{productName},
+    cityName=#{cityName},
+    departureTime=#{departureTime},
+    productPrice=#{productPrice},
+    productDesc=#{productDesc},
+    productStatus=#{productStatus}
+    where id=#{id}
+    </update>
+<!--    删除商品-->
+    <delete id="deleteById" >
+        delete from product where id=#{id}
+    </delete>
+    <!--删除订单中商品-->
+    <update id="editOrderByProductId">
+        update  orders set  productId =  null where productId = #{id}
+    </update>
+</mapper>
